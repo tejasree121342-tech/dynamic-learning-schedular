@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Learning Scheduler</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #0f4c75, #3282b8);
+      color: white;
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+    }
+  
+
+
+    .card {
+      background: white;
+      color: black;
+      border-radius: 20px;
+      padding: 20px;
+      width: 300px;
+      margin-top: 20px;
+    }
+
+    .input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    .button {
+      background: #1b6ca8;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      width: 100%;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+
+    .option {
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    .selected {
+      background: #d0ebff;
+      border: 2px solid blue;
+    }
+
+    .hidden {
+      display: none;
+    }
+	/* Scheduler styles */
+#schedule,#timetable {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.schedule-card {
+  background: white;
+  color: black;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 10px;
+  width: 180px;
+  box-shadow: 0 0 10px #ccc;
+}
+
+.easy { background: #d4edda; }
+.medium { background: #fff3cd; }
+.hard { background: #f8d7da; }
+
+.remove-btn {
+  background: red;
+  margin-top: 10px;
+}
+
+.update-btn {
+  background: #007bff;
+  margin-top: 20px;
+}
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- ===== WELCOME PAGE ===== -->
+  <div id="welcome">
+    <h1>LEARNING SCHEDULER</h1>
+    <h2>The Ultimate Student Productivity Hub</h2>
+    <p>Join millions of students around the world who plan smarter.</p>
+    <button class="button" onclick="goToLogin()">Get Started</button>
+  </div>
+
+  <!-- ===== LOGIN PAGE ===== -->
+  <div id="login" class="hidden">
+    <h2>Welcome back!</h2>
+
+    <div class="card">
+      <input id="email" class="input" placeholder="Email">
+      <input id="password" type="password" class="input" placeholder="Password">
+
+      <button class="button" onclick="handleLogin()">Continue</button>
+    </div>
+  </div>
+
+  <!-- ===== ONBOARDING PAGE ===== -->
+  <div id="onboarding" class="hidden">
+    <h2>What kind of student are you?</h2>
+
+    <div class="card">
+      <div class="option" onclick="selectStudent(this)">Middle School</div>
+      <div class="option" onclick="selectStudent(this)">High School</div>
+      <div class="option" onclick="selectStudent(this)">University</div>
+      <div class="option" onclick="selectStudent(this)">Other</div>
+
+      <button class="button" onclick="goToCustomize()">Continue</button>
+    </div>
+  </div>
+
+  <!-- ===== CUSTOMIZE PAGE ===== -->
+  <div id="customize" class="hidden">
+    <h2>Customize your calendar your way</h2>
+
+    <div class="card">
+
+      <p><b>Schedule Type</b></p>
+
+      <div class="option" onclick="selectType(this)">Weekly rotation</div>
+      <div class="option" onclick="selectType(this)">Daily rotation</div>
+
+      <p id="daysLabel"><b>Number of days</b></p>
+      <select id="days" class="input">
+        <option value="">Select</option>
+      </select>
+
+      <p id="startDayLabel"><b>Start Day</b></p>
+      <select id="startDay" class="input">
+        <option value="">Select</option>
+      </select>
+
+      <!-- ✅ CHANGED -->
+      <button class="button" onclick="goToHome()">Continue</button>
+
+    </div>
+  </div>
+	
+<div id="home" class="hidden">
+  <h2>📚 Smart Study Planner</h2>
+
+  <div class="card">
+    <input id="subject" class="input" placeholder="Enter Subject">
+    <input id="hours" type="number" class="input" placeholder="Minutes per day">
+    <button class="button" onclick="addSubject()">Add Subject</button>
+  </div>
+
+  <h3>📅 Schedule</h3>
+  <div id="schedule"></div>
+
+  <button class="button update-btn" onclick="updateSchedule()">Update Schedule</button>
+ <h3>🕒 Timetable</h3>
+  <div id="timetable"></div>
+
+</div>
+
+</div>
+
+  
+<script>
+  // ===== NAVIGATION =====
+  function goToLogin() {
+    document.getElementById("welcome").classList.add("hidden");
+    document.getElementById("login").classList.remove("hidden");
+  }
+
+  function handleLogin() {
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    if (email && password) {
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("onboarding").classList.remove("hidden");
+    } else {
+      alert("Enter email and password");
+    }
+  }
+
+  function goToCustomize() {
+    document.getElementById("onboarding").classList.add("hidden");
+    document.getElementById("customize").classList.remove("hidden");
+  }
+
+  function goToHome() {
+    let days = document.getElementById("days").value;
+    let startDay = document.getElementById("startDay").value;
+
+    if (!days || !startDay) {
+      alert("Please fill all fields");
+    } else {
+      document.getElementById("customize").classList.add("hidden");
+      document.getElementById("home").classList.remove("hidden");
+    }
+  }
+
+  // ===== SELECTION =====
+  function selectStudent(element) {
+    let options = document.querySelectorAll("#onboarding .option");
+    options.forEach(opt => opt.classList.remove("selected"));
+    element.classList.add("selected");
+  }
+
+  function selectType(element) {
+    let options = document.querySelectorAll("#customize .option");
+    options.forEach(opt => opt.classList.remove("selected"));
+    element.classList.add("selected");
+
+    let type = element.innerText;
+
+    let daysLabel = document.getElementById("daysLabel");
+    let daysSelect = document.getElementById("days");
+    let startDaySelect = document.getElementById("startDay");
+
+    daysSelect.innerHTML = '<option value="">Select</option>';
+    startDaySelect.innerHTML = '<option value="">Select</option>';
+
+    if (type === "Weekly rotation") {
+      daysLabel.innerHTML = "<b>Number of weeks</b>";
+
+      for (let i = 1; i <= 4; i++) {
+        let opt = document.createElement("option");
+        opt.text = i + " Week";
+        daysSelect.add(opt);
+      }
+
+      ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+        .forEach(day => {
+          let opt = document.createElement("option");
+          opt.text = day;
+          startDaySelect.add(opt);
+        });
+
+    } else if (type === "Daily rotation") {
+      daysLabel.innerHTML = "<b>Number of days</b>";
+
+      for (let i = 1; i <= 10; i++) {
+        let opt = document.createElement("option");
+        opt.text = i + " Days";
+        daysSelect.add(opt);
+      }
+
+      ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+        .forEach(day => {
+          let opt = document.createElement("option");
+          opt.text = day;
+          startDaySelect.add(opt);
+        });
+    }
+  }
+	// ===== SCHEDULER LOGIC =====
+let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
+
+function addSubject() {
+  let name = subject.value;
+  let hrs = parseInt(hours.value);
+
+  if (!name || !hrs) return alert("Enter valid data");
+
+  subjects.push({ name, hours: hrs, feedback: "" });
+
+  saveData();
+  displaySchedule();
+
+  subject.value = "";
+  hours.value = "";
+}
+
+function displaySchedule() {
+  let container = document.getElementById("schedule");
+  container.innerHTML = "";
+
+  subjects.forEach((sub, index) => {
+    let card = document.createElement("div");
+    card.className = "schedule-card " + sub.feedback;
+
+    card.innerHTML = `
+      <h3>${sub.name}</h3>
+      <p>⏱ ${sub.hours} mins</p>
+
+      <button onclick="setFeedback(${index}, 'easy')">😊</button>
+      <button onclick="setFeedback(${index}, 'medium')">😐</button>
+      <button onclick="setFeedback(${index}, 'hard')">😓</button>
+
+      <br>
+      <button class="remove-btn" onclick="removeSubject(${index})">❌ Remove</button>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function setFeedback(index, type) {
+  subjects[index].feedback = type;
+  saveData();
+  displaySchedule();
+
+}
+
+function updateSchedule() {
+  subjects.forEach(sub => {
+    if (sub.feedback === "hard") sub.hours += 20;
+    else if (sub.feedback === "easy") sub.hours = Math.max(10, sub.hours - 10);
+    sub.feedback = "";
+  });
+
+  saveData();
+  displaySchedule();
+  generateTimetable();
+}
+
+function removeSubject(index) {
+  subjects.splice(index, 1);
+  saveData();
+  displaySchedule();
+  generateTimetable();
+}
+// ⭐ TIMETABLE FUNCTION
+function generateTimetable() {
+    timetable.innerHTML = "";
+
+    let startHour = 18; // Start at 6 pM
+
+    subjects.forEach(sub => {
+        let endHour = startHour + (sub.hours / 60);
+
+        let card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+            <h3>${sub.name}</h3>
+            <p>🕒 ${formatTime(startHour)} - ${formatTime(endHour)}</p>
+        `;
+
+        timetable.appendChild(card);
+
+        startHour = endHour;
+
+        });
+}
+
+// FORMAT TIME
+function formatTime(hour) {
+    let h = Math.floor(hour);
+    let m = Math.round((hour - h) * 60);
+
+    let ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+
+    return h + ":" + (m < 10 ? "0" + m : m) + " " + ampm;
+}
+
+
+function saveData() {
+  localStorage.setItem("subjects", JSON.stringify(subjects));
+}
+
+// INIT
+displaySchedule();
+generateTimetable();
+
+ </script>
+
+</body>
+</html>
